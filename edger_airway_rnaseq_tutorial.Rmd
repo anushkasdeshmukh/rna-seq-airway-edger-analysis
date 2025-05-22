@@ -1,0 +1,89 @@
+
+---
+title: "RNA-seq Differential Expression with edgeR – Airway Dataset"
+author: "Anushka Deshmukh"
+output: html_document
+---
+
+# Overview
+
+This tutorial replicates a real RNA-seq differential expression analysis using the airway dataset, where airway smooth muscle cells were treated with dexamethasone (a glucocorticoid). The pipeline uses edgeR for normalization, dispersion estimation, and statistical modeling, followed by volcano plot visualization using ggplot2.
+
+---
+
+# Load Libraries
+
+```{r, message=FALSE}
+if (!requireNamespace("BiocManager", quietly=TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install(c("edgeR", "limma", "airway"))
+
+library(airway)
+library(edgeR)
+library(limma)
+library(ggplot2)
+```
+
+---
+
+# Load Real RNA-seq Data
+
+```{r}
+data(airway)
+
+# Extract counts and condition group (treated vs untreated)
+counts <- assay(airway)
+group <- colData(airway)$dex  # "trt" = treated, "untrt" = untreated
+
+# Create DGEList
+dge <- DGEList(counts=counts, group=group)
+dge <- calcNormFactors(dge)
+```
+#Note: This data is from Himes et al. "RNA-seq transcriptome profiling identifies CRISPLD2 as a glucocorticoid responsive gene in airway smooth muscle cells." American Journal of Respiratory Cell and Molecular Biology (2014). Packaged by Bioconductor for teaching and reproducability. 
+---
+
+# Design Matrix and Dispersion Estimation
+
+```{r}
+design <- model.matrix(~group)
+dge <- estimateDisp(dge, design)
+fit <- glmFit(dge, design)
+lrt <- glmLRT(fit)
+topTags(lrt)
+```
+
+---
+
+# Volcano Plot
+
+```{r}
+results <- topTags(lrt, n=Inf)$table
+results$gene <- rownames(results)
+
+ggplot(results, aes(x = logFC, y = -log10(PValue))) +
+  geom_point(alpha = 0.5) +
+  theme_minimal() +
+  xlab("Log2 Fold Change") +
+  ylab("-log10 p-value") +
+  ggtitle("Volcano Plot: Dexamethasone Response in Airway Cells")
+```
+
+---
+
+# Save Plot (Optional)
+
+```{r, eval=FALSE}
+# Create figures directory and save plot
+dir.create("figures", showWarnings = FALSE)
+ggsave("figures/airway_volcano.png", width = 10, height = 6)
+```
+
+---
+
+# Reflection
+
+This exercise demonstrated the complete edgeR workflow on real gene expression count data. I learned how to normalize RNA-seq data, model biological conditions using generalized linear models, and visualize differential gene expression. This tutorial reinforced my understanding of statistical inference in the context of NGS and gave me experience working with real biomedical datasets.
+
+---
+*Note: This analysis was conducted for training and portfolio purposes, based on publicly available datasets and Bioconductor tutorials.*
