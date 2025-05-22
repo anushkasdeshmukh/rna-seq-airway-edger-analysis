@@ -19,7 +19,7 @@ The dataset is included in the Bioconductor `airway` package and originates from
 ## 📁 Files
 
 - `edger_airway_rnaseq_tutorial.Rmd`: Full tutorial analysis in RMarkdown
-- `figures/airway_volcano.png`: Volcano plot showing gene expression changes
+- `airway_volcano.png`: Volcano plot showing gene expression changes
 
 ## 🎯 Learning Goals
 
